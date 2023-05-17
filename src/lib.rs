@@ -5,6 +5,7 @@ use std::fs;
 pub struct Config {
     pub query: String,
     pub file_path: String,
+    pub ignore_case_cmd: String,
     pub ignore_case: bool,
 }
 
@@ -17,10 +18,11 @@ impl  Config {
 
         let query = args[1].clone();
         let file_path = args[2].clone();
+        let ignore_case_cmd = args[3].clone();
 
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
-        Config { query, file_path, ignore_case }
+        Config { query, file_path, ignore_case_cmd, ignore_case }
     }
 
     pub fn build(args: &[String]) -> Result<Config, &'static str> {
@@ -30,10 +32,11 @@ impl  Config {
 
         let query = args[1].clone();
         let file_path = args[2].clone();
+        let ignore_case_cmd = args[3].clone();
 
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
-        Ok(Config { query, file_path, ignore_case })
+        Ok(Config { query, file_path, ignore_case_cmd, ignore_case })
     }
 }
 
@@ -43,7 +46,12 @@ pub fn run(config: Config) -> Result<(),Box<dyn Error>>{
     // .expect("Should have been able to read the file");
 
 //    println!("With text:\n{contents}");
-    let results = if config.ignore_case {
+    // let results = if config.ignore_case {
+    //     search_case_insensitive(&config.query, &contents)
+    // } else {
+    //     search(&config.query, &contents)
+    // };
+    let results = if config.ignore_case_cmd.contains("insen") {
         search_case_insensitive(&config.query, &contents)
     } else {
         search(&config.query, &contents)
