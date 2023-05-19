@@ -11,28 +11,23 @@ pub struct Config {
 
 //创建一个Config的构造函数
 impl  Config {
-    pub fn new(args: &[String]) -> Config {
-        if args.len() < 3 {
-            panic!("Not enough arguments");
-        }
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        args.next();
 
-        let query = args[1].clone();
-        let file_path = args[2].clone();
-        let ignore_case_cmd = args[3].clone();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return  Err("Didn't get a query string"),
+        };
 
-        let ignore_case = env::var("IGNORE_CASE").is_ok();
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file path"),
+        };
 
-        Config { query, file_path, ignore_case_cmd, ignore_case }
-    }
-
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() <3 {
-            return Err("Not enough arguments");
-        }
-
-        let query = args[1].clone();
-        let file_path = args[2].clone();
-        let ignore_case_cmd = args[3].clone();
+        let ignore_case_cmd = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a ignore case cmd"),
+        };
 
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
@@ -43,19 +38,14 @@ impl  Config {
 pub fn run(config: Config) -> Result<(),Box<dyn Error>>{
     //读取文件路径下所指定的文件内容
     let contents = fs::read_to_string(config.file_path)?;
-    // .expect("Should have been able to read the file");
 
-//    println!("With text:\n{contents}");
-    // let results = if config.ignore_case {
-    //     search_case_insensitive(&config.query, &contents)
-    // } else {
-    //     search(&config.query, &contents)
-    // };
-    let results = if config.ignore_case_cmd.contains("insen") {
-        search_case_insensitive(&config.query, &contents)
-    } else {
-        search(&config.query, &contents)
-    };
+    let results = 
+        if config.ignore_case_cmd.contains("insen") {
+            search_case_insensitive(&config.query, &contents)
+        } 
+        else {
+            search(&config.query, &contents)
+        };
 
     for line in results {
         println!("{line}");
